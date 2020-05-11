@@ -1,5 +1,5 @@
 #!/bin/bash
 
-set -e
+set -ex
 
-gunzip -c init2_restore.sql.gz | psql -v ON_ERROR_STOP=1 --username "$POSTGRESQL_USERNAME" galaxy
+gunzip < init2_restore.sql.gz | psql -v ON_ERROR_STOP=1 --username "$POSTGRESQL_USERNAME" galaxy
