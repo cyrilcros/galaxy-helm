@@ -4,7 +4,7 @@
 
 image:
   repository: galaxy/galaxy-k8s
-  tag: 20.01
+  tag: 20.05
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -48,6 +48,15 @@ persistence:
   accessMode: ReadWriteMany
   size: 10Gi
   mountPath: /galaxy/server/database
+
+# extraVolumes:
+#   - name: shared-data
+#     persistentVolumeClaim:
+#       claimName: shared-data-pvc
+
+# extraVolumeMounts:
+#   - name: shared-data
+#     mountPath: /mnt/project/shared-data
 
 # extraInitContainers:
 #   - name: my-first-container
@@ -172,10 +181,12 @@ cvmfs:
   data:
     pvc:
       storage: 1Gi
+      storageClassName: cvmfs-gxy-data
     mountPath: /cvmfs/data.galaxyproject.org
   main:
     pvc:
       storage: 1Gi
+      storageClassName: cvmfs-gxy-main
     mountPath: /cvmfs/main.galaxyproject.org
 
 # When this flag is set to true, all configs will be set in secrets,
@@ -190,7 +201,30 @@ configs:
             <plugin id="local" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4" />
             <plugin id="k8s" type="runner" load="galaxy.jobs.runners.kubernetes:KubernetesJobRunner">
               <param id="k8s_use_service_account">true</param>
-              <param id="k8s_persistent_volume_claims">{{ template "galaxy.pvcname" . }}:{{.Values.persistence.mountPath}},{{ template "galaxy.fullname" . }}-cvmfs-gxy-data-pvc:{{ .Values.cvmfs.data.mountPath }},{{ template "galaxy.fullname" . }}-cvmfs-gxy-main-pvc:{{ .Values.cvmfs.main.mountPath }}</param>
+              <param id="k8s_persistent_volume_claims">
+              {{- template "galaxy.pvcname" . -}}:{{.Values.persistence.mountPath}},
+              {{- template "galaxy.fullname" . }}-cvmfs-gxy-data-pvc:{{ .Values.cvmfs.data.mountPath }},
+              {{- template "galaxy.fullname" . }}-cvmfs-gxy-main-pvc:{{ .Values.cvmfs.main.mountPath -}}
+              {{- if .Values.extraVolumes }}
+                {{- range $num, $entry := .Values.extraVolumes }}
+                  {{- if $entry.name }}
+                    {{- if $entry.persistentVolumeClaim}}
+                      {{- if $entry.persistentVolumeClaim.claimName }}
+                        {{- range $num, $mount := $.Values.extraVolumeMounts }}
+                          {{- if $mount.name }}
+                            {{- if (eq $entry.name $mount.name) }}
+                              {{- if $mount.mountPath -}}
+                                ,{{- $entry.persistentVolumeClaim.claimName -}}:{{- $mount.mountPath -}}
+                              {{- end }}
+                            {{- end }}
+                          {{- end }}
+                        {{- end }}
+                      {{- end }}
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+              {{- end -}}
+              </param>
               <param id="k8s_namespace">{{ .Release.Namespace }}</param>
               <!-- Must be DNS friendly and less than 20 characters -->
               <param id="k8s_galaxy_instance_id">{{ .Release.Name }}</param>
@@ -287,11 +321,12 @@ configs:
     toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.72+galaxy1
     toolshed.g2.bx.psu.edu/repos/engineson/multiqc/multiqc/1.0.0.0
     toolshed.g2.bx.psu.edu/repos/iuc/dexseq/dexseq/1.20.1
+    toolshed.g2.bx.psu.edu/repos/iuc/fastp/fastp/0.19.5+galaxy1
+    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse_to_standalone/0.5.2
+    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse_to_standalone/1.16.5+galaxy6
     toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse/0.5.2.1
     toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse/1.16.5+galaxy6
     toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse/1.16.5+galaxy7
-    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse_to_standalone/0.5.2
-    toolshed.g2.bx.psu.edu/repos/iuc/jbrowse/jbrowse_to_standalone/1.16.5+galaxy6
     toolshed.g2.bx.psu.edu/repos/iuc/macs2/macs2_callpeak/2.1.0.20140616.0
     toolshed.g2.bx.psu.edu/repos/iuc/macs2/macs2_callpeak/2.1.0.20151222.0
     toolshed.g2.bx.psu.edu/repos/iuc/meme_meme/meme_meme/4.11.0.0
