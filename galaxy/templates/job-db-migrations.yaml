@@ -27,7 +27,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-db-migrations
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          command: ['sh', '-c', 'sleep 50s; /galaxy/server/manage_db.sh upgrade']
+          command: ['sh', '-c', 'sleep 20s; echo "kill me"']
           env:
           {{ include "galaxy.podEnvVars" . }}
           volumeMounts:
@@ -43,5 +43,4 @@ spec:
               mountPath: /galaxy/server/lib/galaxy/jobs/rules/{{ $key }}
               subPath: {{ $key }}
             {{- end }}
-      
 ---
