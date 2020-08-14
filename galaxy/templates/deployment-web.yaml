@@ -82,14 +82,12 @@ spec:
              /galaxy/server/.venv/bin/uwsgi --yaml /galaxy/server/config/uwsgi.yml --set galaxy_config_file=/galaxy/server/config/galaxy.yml']
           args: []
           readinessProbe:
-            httpGet:
-              path: {{ template "galaxy.add_trailing_slash" .Values.ingress.path }}
+            tcpSocket:
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 15
           livenessProbe:
-            httpGet:
-              path: {{ template "galaxy.add_trailing_slash" .Values.ingress.path }}
+            tcpSocket:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 60
