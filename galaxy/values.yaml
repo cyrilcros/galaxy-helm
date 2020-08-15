@@ -173,6 +173,12 @@ postgresql:
         name: '{{default (printf "%s-galaxy-secrets" .Release.Name) .Values.galaxyExistingSecret}}'
         key: '{{default "galaxy-db-password" .Values.galaxyExistingSecretKeyRef}}'
 
+galaxyPermissions:
+  uid: 101
+  gid: 101
+  fsGid: 101
+  supGid: 101
+
 cvmfs:
   enabled: false
 
@@ -213,10 +219,10 @@ configs:
               <param id="k8s_namespace">{{ .Release.Namespace }}</param>
               <!-- Must be DNS friendly and less than 20 characters -->
               <param id="k8s_galaxy_instance_id">{{ .Release.Name }}</param>
-              <param id="k8s_run_as_user_id">101</param>
-              <param id="k8s_run_as_group_id">101</param>
-              <param id="k8s_fs_group_id">101</param>
-              <param id="k8s_supplemental_group_id">101</param>
+              <param id="k8s_run_as_user_id">{{ .Values.galaxyPermissions.uid }}</param>
+              <param id="k8s_run_as_group_id">{{ .Values.galaxyPermissions.gid }}</param>
+              <param id="k8s_fs_group_id">{{ .Values.galaxyPermissions.fsGid }}</param>
+              <param id="k8s_supplemental_group_id">{{ .Values.galaxyPermissions.supGid }}</param>
               <param id="k8s_pull_policy">IfNotPresent</param>
               <param id="k8s_cleanup_job">always</param>
               <param id="k8s_pod_priority_class">{{ include "galaxy.fullname" . }}-job-priority</param>
