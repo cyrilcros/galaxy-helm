@@ -32,11 +32,11 @@ spec:
         {{- end }}
     spec:
       securityContext:
-        fsGroup: {{ .Values.galaxyPermissions.fsGid }}
+        fsGroup: {{ .Values.galaxyPermissions.fsGid | int }}
       initContainers:
         - name: {{ .Chart.Name }}-init-postgres
           image: alpine:3.7
-          command: ['sh', '-c', 'chown {{ .Values.galaxyPermissions.fsGid }}:{{ .Values.galaxyPermissions.fsGid }} {{ $.Values.persistence.mountPath }}; until nc -z -w3 {{ template "galaxy-postgresql.fullname" $ }} 5432; do echo waiting for galaxy-postgres service; sleep 1; done;']
+          command: ['sh', '-c', 'chown {{ $.Values.galaxyPermissions.uid }}:{{ $.Values.galaxyPermissions.gid }} {{ $.Values.persistence.mountPath }}; until nc -z -w3 {{ template "galaxy-postgresql.fullname" $ }} 5432; do echo waiting for galaxy-postgres service; sleep 1; done;']
           volumeMounts:
             - name: galaxy-data
               mountPath: {{ .Values.persistence.mountPath }}
