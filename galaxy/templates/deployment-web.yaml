@@ -32,7 +32,7 @@ spec:
         {{- end }}
     spec:
       securityContext:
-        fsGroup: {{ .Values.galaxyPermissions.fsGid }}
+        fsGroup: {{ $.Values.galaxyPermissions.fsGid }}
       initContainers:
         - name: {{ .Chart.Name }}-init-postgres
           image: alpine:3.7
