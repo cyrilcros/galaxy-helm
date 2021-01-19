@@ -103,14 +103,14 @@ spec:
             '{{- if $.Values.extraInitCommands -}}
              {{- tpl $.Values.extraInitCommands $ | nindent 13 -}};
              {{- end -}}
-             python /galaxy/server/scripts/galaxy-main -c /galaxy/server/config/galaxy.yml --server-name job_handler_{{ $handler_num }} --attach-to-pool job-handlers']
+             bash -i -c "conda activate _galaxy_ && python /galaxy/server/scripts/galaxy-main -c /galaxy/server/config/galaxy.yml --server-name job_handler_{{ $handler_num }} --attach-to-pool job-handlers"']
           args: []
           {{- if $.Values.jobHandlers.readinessProbe.enabled }}
           readinessProbe:
             exec:
               command: [
-                'sh', '-c',
-                'python /tmp/probedb.py -c $GALAXY_CONFIG_OVERRIDE_DATABASE_CONNECTION -s job_handler_{{ $handler_num }} -o $HOSTNAME'
+                'bash', '-i', '-c',
+                'conda activate _galaxy_ && python /tmp/probedb.py -c $GALAXY_CONFIG_OVERRIDE_DATABASE_CONNECTION -s job_handler_{{ $handler_num }} -o $HOSTNAME'
               ]
             initialDelaySeconds: {{ $.Values.jobHandlers.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ $.Values.jobHandlers.readinessProbe.periodSeconds }}

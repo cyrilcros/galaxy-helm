@@ -84,14 +84,14 @@ spec:
             '{{- if .Values.extraInitCommands -}}
              {{- tpl .Values.extraInitCommands $ | nindent 13 -}};
              {{- end -}}
-             python /galaxy/server/scripts/galaxy-main -c /galaxy/server/config/galaxy.yml --server-name workflow_scheduler0']
+             bash -i -c "conda activate _galaxy_ && python /galaxy/server/scripts/galaxy-main -c /galaxy/server/config/galaxy.yml --server-name workflow_scheduler0"']
           args: []
           {{- if .Values.workflowHandlers.readinessProbe.enabled }}
           readinessProbe:
             exec:
               command: [
-                'sh', '-c',
-                'python /tmp/probedb.py -c $GALAXY_CONFIG_OVERRIDE_DATABASE_CONNECTION -s workflow_scheduler0 -o $HOSTNAME'
+                'bash', '-i', '-c',
+                'conda activate _galaxy_ && python /tmp/probedb.py -c $GALAXY_CONFIG_OVERRIDE_DATABASE_CONNECTION -s workflow_scheduler0 -o $HOSTNAME'
               ]
             initialDelaySeconds: {{ .Values.workflowHandlers.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.workflowHandlers.readinessProbe.periodSeconds }}
